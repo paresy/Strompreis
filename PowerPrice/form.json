@@ -16,6 +16,10 @@
                 {
                     "caption": "EPEX Spot (via ENTSO-E)",
                     "value": "EPEXSpot"
+                },
+                {
+                    "caption": "Demo",
+                    "value": "Demo"
                 }
             ],
             "onChange": "SPX_UIChangeProvider($id, $Provider);"

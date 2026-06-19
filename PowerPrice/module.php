@@ -61,12 +61,13 @@ class PowerPrice extends IPSModuleStrict
         // Price resolution can only be changed for Tibber
         $form['elements'][6]['visible'] = $this->ReadPropertyString('Provider') === 'Tibber';
 
-        // Tibber includes full price information
-        $form['elements'][7]['visible'] = $this->ReadPropertyString('Provider') != 'Tibber';
-        $form['elements'][8]['visible'] = $this->ReadPropertyString('Provider') != 'Tibber';
-        $form['elements'][9]['visible'] = $this->ReadPropertyString('Provider') != 'Tibber';
-        $form['elements'][10]['visible'] = $this->ReadPropertyString('Provider') != 'Tibber';
-        $form['elements'][11]['visible'] = $this->ReadPropertyString('Provider') != 'Tibber';
+        // Tibber and Demo include full price information
+        $priceFieldsVisible = !in_array($this->ReadPropertyString('Provider'), ['Tibber', 'Demo']);
+        $form['elements'][7]['visible'] = $priceFieldsVisible;
+        $form['elements'][8]['visible'] = $priceFieldsVisible;
+        $form['elements'][9]['visible'] = $priceFieldsVisible;
+        $form['elements'][10]['visible'] = $priceFieldsVisible;
+        $form['elements'][11]['visible'] = $priceFieldsVisible;
         return json_encode($form);
     }
 
@@ -89,6 +90,9 @@ class PowerPrice extends IPSModuleStrict
                 break;
             case 'EPEXSpot':
                 $marketData = $this->FetchFromEntsoe($this->ReadPropertyString('EPEXSpotMarket'));
+                break;
+            case 'Demo':
+                $marketData = $this->FetchFromDemo();
                 break;
         }
 
@@ -182,11 +186,12 @@ class PowerPrice extends IPSModuleStrict
         if ($Provider == 'aWATTar') {
             $this->UpdateFormField('PriceResolution', 'value', 60);
         }
-        $this->UpdateFormField('PriceHint', 'visible', $Provider != 'Tibber');
-        $this->UpdateFormField('PriceBase', 'visible', $Provider != 'Tibber');
-        $this->UpdateFormField('PricePremiumHint', 'visible', $Provider != 'Tibber');
-        $this->UpdateFormField('PriceSurcharge', 'visible', $Provider != 'Tibber');
-        $this->UpdateFormField('PriceTax', 'visible', $Provider != 'Tibber');
+        $showPriceFields = !in_array($Provider, ['Tibber', 'Demo']);
+        $this->UpdateFormField('PriceHint', 'visible', $showPriceFields);
+        $this->UpdateFormField('PriceBase', 'visible', $showPriceFields);
+        $this->UpdateFormField('PricePremiumHint', 'visible', $showPriceFields);
+        $this->UpdateFormField('PriceSurcharge', 'visible', $showPriceFields);
+        $this->UpdateFormField('PriceTax', 'visible', $showPriceFields);
     }
 
     private function NormalizeAndReduce($data): string
@@ -242,6 +247,40 @@ class PowerPrice extends IPSModuleStrict
             $result[] = $value;
         }
 
+        return json_encode($result);
+    }
+
+    private function FetchFromDemo(): string
+    {
+        $demoFile = __DIR__ . '/demo.json';
+        if (!file_exists($demoFile)) {
+            $this->SendDebug('FetchFromDemo - Error', 'Demo file not found', 0);
+            return json_encode([]);
+        }
+
+        $data = json_decode(file_get_contents($demoFile), true);
+        if ($data === null || count($data) === 0) {
+            $this->SendDebug('FetchFromDemo - Error', 'Failed to parse demo.json', 0);
+            return json_encode([]);
+        }
+
+        // Shift timestamps so the demo data's day aligns with today
+        $demoFirstStart = $data[0]['start'];
+        $demoDay = mktime(0, 0, 0, intval(date('m', $demoFirstStart)), intval(date('d', $demoFirstStart)), intval(date('Y', $demoFirstStart)));
+        $today = mktime(0, 0, 0, intval(date('m', $this->getTime())), intval(date('d', $this->getTime())), intval(date('Y', $this->getTime())));
+        $offset = $today - $demoDay;
+        $this->SendDebug('FetchFromDemo - Offset', "$offset seconds (" . ($offset / 86400) . ' days)', 0);
+
+        $result = array_map(function ($row) use ($offset)
+        {
+            return [
+                'start' => $row['start'] + $offset,
+                'end'   => $row['end'] + $offset,
+                'price' => $row['price'],
+            ];
+        }, $data);
+
+        $this->SendDebug('FetchFromDemo - Result', json_encode($result), 0);
         return json_encode($result);
     }
 
