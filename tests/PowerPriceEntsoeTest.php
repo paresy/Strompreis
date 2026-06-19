@@ -39,20 +39,20 @@ class PowerPriceEntsoeTest extends TestCase
         });
     }
 
-    public function testDataFromWrongDay() : void
+    public function testDataFromWrongDay(): void
     {
         IPS_CreateVariableProfile('~TextBox', 3);
         $instanceID = IPS_CreateInstance('{9354E28B-4E62-AEE5-8F88-BECA9F3F4F8F}');
         IPS_SetConfiguration($instanceID, json_encode([
-            'Provider' => 'EPEXSpot',
-            'EPEXSpotToken' => 'test',
-            'EPEXSpotMarket' => 'DE-LU',
-            'aWATTarMarket' => 'de',
+            'Provider'         => 'EPEXSpot',
+            'EPEXSpotToken'    => 'test',
+            'EPEXSpotMarket'   => 'DE-LU',
+            'aWATTarMarket'    => 'de',
             'TibberPostalCode' => '23554',
-            'PriceResolution' => 15,
-            'PriceBase' => 0,
-            'PriceSurcharge' => 0,
-            'PriceTax' => 0,
+            'PriceResolution'  => 15,
+            'PriceBase'        => 0,
+            'PriceSurcharge'   => 0,
+            'PriceTax'         => 0,
         ]));
         IPS_ApplyChanges($instanceID);
         // Time is in UTC, so 17:47:17 in UTC is 18:47:17 in CET

@@ -7,23 +7,23 @@ if (defined('PHPUNIT_TESTSUITE')) {
     {
         private $contentsOverrides = [];
 
-        public function SetContentsOverride(string $url, string $contents) : void
+        public function SetContentsOverride(string $url, string $contents): void
         {
             $this->contentsOverrides[$url] = $contents;
         }
 
-        protected function getContents($url) : array
+        protected function getContents($url): array
         {
             $override = $this->contentsOverrides[$url] ?? null;
             if ($override !== null) {
                 return [
-                    'body' => $override,
+                    'body'   => $override,
                     'header' => ['200']
                 ];
             }
             else {
                 return [
-                    'body' => false,
+                    'body'   => false,
                     'header' => ['404']
                 ];
             }
@@ -32,7 +32,7 @@ if (defined('PHPUNIT_TESTSUITE')) {
 } else {
     trait TestGetContents
     {
-        protected function getContents($url) : array
+        protected function getContents($url): array
         {
             $options = [
                 'http' => [
@@ -40,7 +40,7 @@ if (defined('PHPUNIT_TESTSUITE')) {
                 ]
             ];
             return [
-                'body' => file_get_contents($url, false, stream_context_create($options)),
+                'body'   => file_get_contents($url, false, stream_context_create($options)),
                 'header' => $http_response_header ?? null
             ];
         }
