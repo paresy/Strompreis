@@ -545,8 +545,8 @@ class PowerPrice extends IPSModuleStrict
         foreach ($energy as $data) {
             $date = explode('-', $data['date']);
             $result[] = [
-                'start' => mktime($data['hour'], $data['minute'], 0, intval($date[1]), intval($date[2]), intval($date[0])),
-                'end'   => mktime($data['hour'], $data['minute'] + $resolution, 0, intval($date[1]), intval($date[2]), intval($date[0])),
+                'start' => mktime($data['hour'], $data['minute'] ?? 0, 0, intval($date[1]), intval($date[2]), intval($date[0])),
+                'end'   => mktime($data['hour'], ($data['minute'] ?? 0) + $resolution, 0, intval($date[1]), intval($date[2]), intval($date[0])),
                 'price' => $data['priceIncludingVat'] * 100,
             ];
         }
