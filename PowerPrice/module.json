@@ -8,7 +8,7 @@
         "PowerPrice (aWATTar)",
         "PowerPrice (EPEX Spot)"
     ],
-    "url": "https://www.symcon.de/en/service/documentation/module-reference/power-price",
+    "url": "https://www.symcon.de/en/service/documentation/module-reference/energy/power-price/",
     "parentRequirements": [],
     "childRequirements": [],
     "implemented": [],
